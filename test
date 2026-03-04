@@ -1,0 +1,29 @@
+# Set your file paths
+$inputTxt = "C:\temp\output_binary.txt"
+$outputZip = "C:\temp\restored_file.zip"
+
+try {
+    # 1. Read the entire binary text string from the file
+    $binaryString = Get-Content -Path $inputTxt -Raw
+
+    # 2. Check if the string length is a multiple of 8
+    if ($binaryString.Length % 8 -ne 0) {
+        Write-Warning "The binary string length is not a multiple of 8. Data might be corrupted."
+    }
+
+    # 3. Split the string into 8-bit chunks and convert each to a byte
+    $byteList = New-Object System.Collections.Generic.List[byte]
+    for ($i = 0; $i -lt $binaryString.Length; $i += 8) {
+        $byteString = $binaryString.Substring($i, 8)
+        # Convert base-2 string to a byte (integer)
+        $byteList.Add([System.Convert]::ToByte($byteString, 2))
+    }
+
+    # 4. Convert the list to a byte array and write to a new ZIP file
+    [System.IO.File]::WriteAllBytes($outputZip, $byteList.ToArray())
+
+    Write-Host "Successfully restored $outputZip" -ForegroundColor Green
+}
+catch {
+    Write-Error "An error occurred during restoration: $_"
+}
